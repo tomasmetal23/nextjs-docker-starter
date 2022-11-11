@@ -1,0 +1,54 @@
+version: '3'
+services:
+  dev:
+    container_name: nextjs-dev
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      # network: host
+    volumes:
+      - .:/opt/app
+      - /opt/app/node_modules
+      - /opt/app/.next
+    ports:
+      - '3000'
+    labels:
+          # Enable this container to be mapped by traefik
+      # For more information, see: https://docs.traefik.io/providers/docker/#exposedbydefault
+            - "traefik.enable=true"
+         # Define the network that should be used
+            - "traefik.docker.network=web"
+      # URL to reach this container
+            - "traefik.http.routers.dev.rule=Host(`nextjs.docker.localhost`)"
+      # Activation of TLS
+            - "traefik.http.routers.dev.tls=true"
+      # If port is different than 80, use the following service:
+            - "traefik.http.services.dev.loadbalancer.server.port=3000"
+    # stdin_open: true
+    # tty: true
+  prod:
+    container_name: nextjs-prod
+    build:
+      target: production
+      context: .
+      dockerfile: Dockerfile.prod
+      # network: host
+    # restart: always
+    volumes:
+      - .:/opt/app
+      - /opt/app/node_modules
+      - /opt/app/.next
+    ports:
+      - '8000'
+    labels:
+          # Enable this container to be mapped by traefik
+      # For more information, see: https://docs.traefik.io/providers/docker/#exposedbydefault
+            - "traefik.enable=true"
+         # Define the network that should be used
+            - "traefik.docker.network=web"
+      # URL to reach this container
+            - "traefik.http.routers.prod.rule=Host(`nextjs.docker.localhost`)"
+      # Activation of TLS
+            - "traefik.http.routers.prod.tls=true"
+      # If port is different than 80, use the following service:
+            - "traefik.http.services.prod.loadbalancer.server.port=8000"
